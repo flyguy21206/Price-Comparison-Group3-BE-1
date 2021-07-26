@@ -1,3 +1,4 @@
+
 from django.contrib import admin
 from .models import Product, Comments
 
@@ -17,5 +18,6 @@ class CommentAdmin(admin.ModelAdmin):
 
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Comments, CommentAdmin)
+
 
 

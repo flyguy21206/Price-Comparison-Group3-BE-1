@@ -1,4 +1,3 @@
-
 from django.http.response import HttpResponseRedirect
 from django.urls import reverse
 from .models import Product, Comments

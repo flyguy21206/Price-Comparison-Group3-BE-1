@@ -1,4 +1,3 @@
-  
 from django import forms
 from .models import Comments
 from .models import Product

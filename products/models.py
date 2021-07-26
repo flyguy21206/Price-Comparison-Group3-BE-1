@@ -2,6 +2,7 @@
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.contrib.auth.models import User
 
 
 
@@ -18,10 +19,9 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-   
-
     def __str__(self):
         return self.product_name
+
 
 class Comments(models.Model):
 
@@ -44,4 +44,6 @@ class Comments(models.Model):
         ordering = ['last_update']
 
     def __str__(self):
+
         return 'Comment on {} by {}'.format(self.product, self.user)
+
