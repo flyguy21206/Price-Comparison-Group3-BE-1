@@ -3,13 +3,6 @@ from .models import Comments
 from .models import Product
 
 
-class ProductForm(forms.ModelForm):
-
-    class Meta:
-        model = Product
-        fields = ('product_name', 'price','image', 'description')
-
-
 class CommentForm(forms.ModelForm):
     content = forms.CharField(label="", widget=forms.Textarea(
         attrs={
