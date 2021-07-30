@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from .models import Product, Comments
+from .models import Product, Comments, LikeButton
 
 class ProductAdmin(admin.ModelAdmin):
     model = Product
@@ -18,6 +18,4 @@ class CommentAdmin(admin.ModelAdmin):
 
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Comments, CommentAdmin)
-
-
-
+admin.site.register(LikeButton)

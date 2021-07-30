@@ -1,3 +1,5 @@
+
+  
 from django import forms
 from .models import Comments
 from .models import Product
@@ -16,4 +18,11 @@ class CommentForm(forms.ModelForm):
         model = Comments
         fields = ['content']
 
+
+class AddProductForm(forms.Form):
+    """
+    Adds products. Used with add product view and template
+    """
+    amazon_asin = forms.CharField(max_length=12)
+    ebay_url = forms.CharField(max_length=200)
 
