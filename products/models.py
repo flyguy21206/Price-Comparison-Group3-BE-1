@@ -51,6 +51,12 @@ class LikeButton(models.Model):
     product = models.OneToOneField(Product, on_delete=models.CASCADE)
     user = models.ManyToManyField(User, blank=True, related_name='likebutton')
 
+    # content = models.TextField(null=True)
+
+    def __str__(self):
+        return f"{self.product.product_name} Likes"
+
     @property
     def total_likes(self):
         return self.user.count()
+
