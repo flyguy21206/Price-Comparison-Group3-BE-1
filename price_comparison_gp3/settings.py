@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     # Application created by me
     'accounts',
     'products',
-    'comment',
 ]
 
 MIDDLEWARE = [

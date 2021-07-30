@@ -7,9 +7,6 @@ from django.contrib.auth.models import User
 User = get_user_model()
 
 
-
-
-
 class Product(models.Model):
     product_name = models.CharField(max_length=512, blank=True, null=True)
     image = models.URLField(blank=True, null=True)
@@ -19,11 +16,9 @@ class Product(models.Model):
     ebay_url = models.URLField(blank=True, null=True, default=None)
     amazon_asin = models.CharField(max_length=12, blank=True, null=True, default=None)
     category = models.CharField(max_length=200, blank=True, null=True, default=None)
-
     description = models.TextField(blank=True, null=True)
     features = models.TextField(blank=True, null=True)
     miscellaneous = models.CharField(max_length=3000, blank=True, null=True)
-    rating = models.IntegerField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
@@ -41,9 +36,6 @@ class Comments(models.Model):
     approved_comment = models.BooleanField(default=False)
     number_of_comments = models.IntegerField(blank=True, null=True)
 
-    def approve(user):
-        user.approved_comment = True
-        user.save()
 
     def approved_comments(self):
         return self.content.filter(approved_comment=True)
@@ -53,6 +45,12 @@ class Comments(models.Model):
         ordering = ['last_update']
   
     def __str__(self):
-
         return 'Comment on {} by {}'.format(self.product, self.user)
 
+class LikeButton(models.Model):
+    product = models.OneToOneField(Product, on_delete=models.CASCADE)
+    user = models.ManyToManyField(User, blank=True, related_name='likebutton')
+
+    @property
+    def total_likes(self):
+        return self.user.count()
