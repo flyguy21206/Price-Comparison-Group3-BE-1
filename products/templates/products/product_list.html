@@ -59,17 +59,20 @@
 
     {% for product in product_list|slice:slice %}
     <div class="container">
-        <div class="productImage {% if user in product.likebutton.user.all %}star{% endif %}">
+        <div class="productImage {% if user in product.like_button.user.all %}star{% endif %}">
             <a href="{% url 'products:product_detail' product.pk %}">
                 <img class="thumb" src="{{ product.image }}"></a></div>
         <h4 class="productName">{{ product.product_name|wordwrap:25|linebreaksbr|truncatechars:40 }}</h4>
         <a class="amazonPrice" href="{{ product.amazon_url }}">${{ product.amazon_price }}</a>
         <a class="ebayPrices" href="{{ product.ebay_url}}">${{ product.ebay_price }}</a>
+        </div><a href="{% url 'products:product_detail' product.pk %}">Comments: {{ product.comments.count }}</a>
         <h5 class="condition">{{ product.category|truncatechars:20 }}</h5>
-    </div>
+    
     {% endfor %}
 </div>
+
 {% endfor %}
+
 
 </body>
 </html>

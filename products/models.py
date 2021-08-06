@@ -3,6 +3,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 User = get_user_model()
 
@@ -10,6 +11,7 @@ User = get_user_model()
 class Product(models.Model):
     product_name = models.CharField(max_length=512, blank=True, null=True)
     image = models.URLField(blank=True, null=True)
+    liked = models.ManyToManyField(User, default=None, blank=True, related_name='liked')
     amazon_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     ebay_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     amazon_url = models.URLField(blank=True, null=True, default=None)
@@ -22,10 +24,16 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
+    
+    @property
+    def count_likes(self):
+        return self.liked.filter().count()
 
     def __str__(self):
         return self.product_name
 
+    def get_absolute_url(self):
+        return reverse("products/product_detail", kwargs={"id":self.id})
 
 class Comments(models.Model):
 
@@ -33,30 +41,33 @@ class Comments(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.PROTECT)
     content = models.TextField(max_length=3000, blank=True, null=True)
     last_update = models.DateTimeField(auto_now=True)
-    approved_comment = models.BooleanField(default=False)
-    number_of_comments = models.IntegerField(blank=True, null=True)
 
+    
+    def get_absolute_url(self):
+        return reverse("products/product_detail", kwargs={"id":self.id})
 
-    def approved_comments(self):
-        return self.content.filter(approved_comment=True)
 
     class Meta:
         verbose_name_plural = "Comments"
         ordering = ['last_update']
   
     def __str__(self):
-        return 'Comment on {} by {}'.format(self.product, self.user)
+        return 'Comment on {} by {}'.format(self.content, self.user)
+    
+    def get_absolute_url(self):
+        return reverse("product_detail", kwargs={"id":self.id})
+        # return "/product_details/%s/"%(self.id)
+
+LIKE_CHOICES = {
+    ('Like', 'Like'),
+    ('Unlike', 'Unlike'),
+}
 
 class LikeButton(models.Model):
-    product = models.OneToOneField(Product, on_delete=models.CASCADE)
-    user = models.ManyToManyField(User, blank=True, related_name='likebutton')
-
-    # content = models.TextField(null=True)
-
-    def __str__(self):
-        return f"{self.product.product_name} Likes"
-
-    @property
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, blank=True, related_name='productlikes')
+    user = models.ForeignKey(User, blank=True, related_name='likebutton', null=True, on_delete=models.CASCADE)
+    product_like = models.CharField(choices=LIKE_CHOICES, default="Like", max_length=7)
+ 
     def total_likes(self):
-        return self.user.count()
+        return (self.product, self.product_like)
 

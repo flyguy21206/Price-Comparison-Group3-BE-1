@@ -1,0 +1,13 @@
+<h1>Edit Comment</h1>
+
+{{% for products in products %}}
+{{ data.comment }}
+<form method="POST">
+    {% csrf_token %}
+    {{ comment_form.as_p  }}
+    
+    <input type="submit" value="Submit"></button>
+    <a href = "{% url 'products:product_detail' product.pk %}"> </a><input type="submit" value="Cancel"></button>
+
+</form> 
+{{ data.content }}

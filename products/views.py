@@ -1,7 +1,8 @@
 
 import json
-import requests
+#import requests
 from django.contrib import messages
+from django.contrib.auth import models
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -12,7 +13,8 @@ from test_files import ebay_products, amazon_products
 from django.http.response import HttpResponseRedirect
 from django.urls import reverse
 from .models import Product, Comments, LikeButton
-from .forms import CommentForm, AddProductForm
+from .forms import CommentForm, AddProductForm, EditCommentForm
+from django.views.generic import UpdateView
 
 debug_gp = True
 amazon_responses = amazon_products.amazon_responses
@@ -32,15 +34,27 @@ def products(request):
 # Specific product detail
 
 def product_detail(request, pk):
-    products = Product.objects.get(id=pk)
-    
-    context = {'products':products,'pk':pk} 
+    template_name = 'products/product_detail.html'  
+    products = Product.objects.get(pk=pk)  
+    if request.method == 'POST':
+        print("step 1")
+        form = CommentForm(request.POST or None)
+        if form.is_valid():
+            print("step 2")
+            content = request.POST.get('content')
+            comment = Comments.objects.create(products = products, user = request.user, content = content)
+            comment.save()
+            return HttpResponseRedirect (template_name)
+    else:
+        form = CommentForm()
+        print("step 2")
+        
+    return render(request, template_name, {'form':form} )
 
-    return render(request, "product_detail.html", context)
 
-# Add comment to product
-@login_required
 def add_comment(request, pk):
+    template_name = 'products/product_detail.html'
+
     product = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
        
@@ -49,47 +63,44 @@ def add_comment(request, pk):
         comments=Comments(user=user, content=content, product=product)
         comments.save()
         
-        return redirect('product_detail', pk=pk)
+        return redirect('products/product_detail', pk=pk)
     else:
         form = CommentForm()
-    return render(request, 'add_comment.html', {'form': form, 'pk':pk})
+    return render(request, template_name, {'form': form, 'pk':pk})
+
+
+
+@login_required
+def edit_comments(request, id):
+    context = {}
+    products = get_object_or_404(Product)
+    # comments = Comments.objects.get(id)
+    comments = get_object_or_404(Comments, 'content')
+    content=request.POST.get('comment_body')
+    editform = EditCommentForm(request.POST, instance=comments)
+    comments.save(id=id)    
+    context = {'products':products, 'editform':editform, 'comments':comments, 'content':content}
+        
+        # return redirect(aargs={"id":id}, kwargs={"pk": products.pk}) 
+        # return HttpResponseRedirect(products/product_detail)
+     
+
+    return render(request, 'edit_comments.html', )
 
 # Delete comment
 @login_required
-def deletecomment(request, id, pk):
-    context={}
-    comments = get_object_or_404(Comments, id=id)
-    product = get_object_or_404(Product, pk=pk)
-    request.user=comments.user
-    if request.method =="POST":
-        comments.delete()
-        return HttpResponseRedirect(reverse('product_detail', kwargs={"pk": product.pk}))
-    else:
-        return render(request, "deletecomment.html", context)
+def deletecomment(request, comments_id):
+    context = {}
+    products = get_object_or_404(Product, id=id)
+    # comments = Comments.objects.get(id)
+    comments = get_object_or_404(Comments, id=comments_id)
+    form = CommentForm()
+    comments.delete()
+    context = {'comments':comments, 'comments_id':comments_id}
+    return render(request, 'deletecomment.html', )
 
 
 # Edit Comment
-@login_required
-def edit_comments(request, id, pk):
-    
-    product = get_object_or_404(Product, pk=pk)
-    comments = Comments.objects.get(id=id)
-    if request.method == 'POST':
-        request.user=comments.user
-        form = CommentForm(request.POST, instance=comments)
-        
-        form.save()
-            
-        return HttpResponseRedirect(reverse('product_detail', kwargs={"pk": product.pk}))
-    else:
-        form=CommentForm(instance=comments)
-    return render(request, 'edit_comments.html', {'form':form, 'comments':comments, 'pk':pk})
-
-
-@login_required
-def product_list(request, id):
-    products = get_object_or_404(Product, id=id)
-    return render(request, 'products.html', {'products': products})
 
 
 # Show list of products
@@ -116,27 +127,6 @@ class ProductListView(generic.ListView):
         return context
 
 
-# Show product details
-class ProductDetailView(generic.DetailView):
-    model = Product
-    template_name = 'products/product_detail.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(ProductDetailView, self).get_context_data(**kwargs)
-        pk = self.kwargs['pk']
-        context['likes_list'] = LikeButton.objects.filter(product_id=pk)
-        user = self.request.user
-        if user.is_authenticated:
-            context['user_like'] = LikeButton.objects.filter(user=self.request.user, product_id=pk)
-        else:
-            context['user_like'] = False
-
-        # Split features into list of lines
-        product = self.object
-        features = product.features.splitlines()
-        context['list_lines'] = features
-
-        return context
 
 
 # Like button
